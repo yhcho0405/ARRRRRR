@@ -1,14 +1,16 @@
 import numpy as np
 import cv2 as cv
 
-def select_img_from_video(input_file, board_pattern, select_all=False, wait_msec=10):
+def select_img_from_video(input_file, board_pattern, auto=False, select_all=False, wait_msec=10):
     # Open a video
     video = cv.VideoCapture(input_file)
     assert video.isOpened(), 'Cannot read the given input, ' + input_file
+    f = 0
 
     # Select images
     img_select = []
     while True:
+        f += 1
         # Grab an images from the video
         valid, img = video.read()
         if not valid:
@@ -21,7 +23,12 @@ def select_img_from_video(input_file, board_pattern, select_all=False, wait_msec
             display = img.copy()
             cv.putText(display, f'NSelect: {len(img_select)}', (10, 25), cv.FONT_HERSHEY_DUPLEX, 0.6, (0, 255, 0))
             cv.imshow('Camera Calibration', display)
-
+            if auto:
+                complete, pts = cv.findChessboardCorners(img, board_pattern)
+                cv.drawChessboardCorners(display, board_pattern, pts, complete)
+                cv.imshow('Camera Calibration', display)
+                if f % 30 == 0:
+                    img_select.append(img)
             # Process the key event
             key = cv.waitKey(wait_msec)
             if key == 27:                  # 'ESC' key: Exit (Complete image selection)
@@ -66,7 +73,7 @@ def pose_estimation_chessboard(input_file, K, dist_coeff, board_pattern = (10, 7
 
     # Prepare a 3D box for simple AR
     box_lower = board_cellsize * np.array([[4, 2, 0], [5, 2,  0], [5, 4, 0], [4, 4, 0]])
-    box_upper = board_cellsize * np.array([[4, 2, -10], [5, 2, -10], [5, 4, -10], [4, 4, -10]])
+    box_upper = board_cellsize * np.array([[4, 2, -1], [5, 2, -1], [5, 4, -1], [4, 4, -1]])
 
     # Prepare 3D points on a chessboard
     obj_points = board_cellsize * np.array([[c, r, 0] for r in range(board_pattern[1]) for c in range(board_pattern[0])])
@@ -111,10 +118,11 @@ def pose_estimation_chessboard(input_file, K, dist_coeff, board_pattern = (10, 7
 
 if __name__ == '__main__':
     input_file = './data/chessboard.mp4'
+    auto = False
     board_pattern = (10, 7)
     board_cellsize = 0.024
 
-    img_select = select_img_from_video(input_file, board_pattern)
+    img_select = select_img_from_video(input_file, board_pattern, auto)
     assert len(img_select) > 0, 'There is no selected images!'
     rms, K, dist_coeff, rvecs, tvecs = calib_camera_from_chessboard(img_select, board_pattern, board_cellsize)
 
