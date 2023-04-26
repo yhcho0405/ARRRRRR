@@ -72,8 +72,35 @@ def pose_estimation_chessboard(input_file, K, dist_coeff, board_pattern = (10, 7
     assert video.isOpened(), 'Cannot read the given input, ' + input_file
 
     # Prepare a 3D box for simple AR
-    box_lower = board_cellsize * np.array([[4, 2, 0], [5, 2,  0], [5, 4, 0], [4, 4, 0]])
-    box_upper = board_cellsize * np.array([[4, 2, -1], [5, 2, -1], [5, 4, -1], [4, 4, -1]])
+    h = 7
+    Yx = 1
+    Hx = -3
+
+    h = -(h - 1)
+
+    # 'Y'
+    box_lower1 = board_cellsize * (np.array([[4.25, 2, 0], [4.75, 2, 0], [4.75, 3, 0], [4.25, 3, 0]]) + np.array([Yx, 0, 0]))
+    box_upper1 = board_cellsize * (np.array([[4.25, 2, -1], [4.75, 2, -1], [4.75, 3, -1], [4.25, 3, -1]]) + np.array([Yx, 0, h]))
+
+    box_lower2 = board_cellsize * (np.array([[4, 3, 0], [4.5, 3, 0], [4.25, 4, 0], [3.75, 4, 0]]) + np.array([Yx, 0, 0]))
+    box_upper2 = board_cellsize * (np.array([[4, 3, -1], [4.5, 3, -1], [4.25, 4, -1], [3.75, 4, -1]]) + np.array([Yx, 0, h]))
+
+    box_lower3 = board_cellsize * (np.array([[4.5, 3, 0], [5, 3, 0], [5.25, 4, 0], [4.75, 4, 0]]) + np.array([Yx, 0, 0]))
+    box_upper3 = board_cellsize * (np.array([[4.5, 3, -1], [5, 3, -1], [5.25, 4, -1], [4.75, 4, -1]]) + np.array([Yx, 0, h]))
+
+
+    # 'H'
+    box_lower4 = board_cellsize * (np.array([[6, 2, 0], [6.5, 2, 0], [6.5, 4, 0], [6, 4, 0]]) + np.array([Hx, 0, 0]))
+    box_upper4 = board_cellsize * (np.array([[6, 2, -1], [6.5, 2, -1], [6.5, 4, -1], [6, 4, -1]]) + np.array([Hx, 0, h]))
+
+    box_lower5 = board_cellsize * (np.array([[7, 2, 0], [7.5, 2, 0], [7.5, 4, 0], [7, 4, 0]]) + np.array([Hx, 0, 0]))
+    box_upper5 = board_cellsize * (np.array([[7, 2, -1], [7.5, 2, -1], [7.5, 4, -1], [7, 4, -1]]) + np.array([Hx, 0, h]))
+
+    box_lower6 = board_cellsize * (np.array([[6.5, 2.75, 0], [7, 2.75, 0], [7, 3.25, 0], [6.5, 3.25, 0]]) + np.array([Hx, 0, 0]))
+    box_upper6 = board_cellsize * (np.array([[6.5, 2.75, -1], [7, 2.75, -1], [7, 3.25, -1], [6.5, 3.25, -1]]) + np.array([Hx, 0, h]))
+
+
+
 
     # Prepare 3D points on a chessboard
     obj_points = board_cellsize * np.array([[c, r, 0] for r in range(board_pattern[1]) for c in range(board_pattern[0])])
@@ -91,12 +118,42 @@ def pose_estimation_chessboard(input_file, K, dist_coeff, board_pattern = (10, 7
             ret, rvec, tvec = cv.solvePnP(obj_points, img_points, K, dist_coeff)
 
             # Draw the box on the image
-            line_lower, _ = cv.projectPoints(box_lower, rvec, tvec, K, dist_coeff)
-            line_upper, _ = cv.projectPoints(box_upper, rvec, tvec, K, dist_coeff)
-            cv.polylines(img, [np.int32(line_lower)], True, (255, 0, 0), 2)
-            cv.polylines(img, [np.int32(line_upper)], True, (0, 0, 255), 2)
-            for b, t in zip(line_lower, line_upper):
+            line_lower1, _ = cv.projectPoints(box_lower1, rvec, tvec, K, dist_coeff)
+            line_upper1, _ = cv.projectPoints(box_upper1, rvec, tvec, K, dist_coeff)
+            line_lower2, _ = cv.projectPoints(box_lower2, rvec, tvec, K, dist_coeff)
+            line_upper2, _ = cv.projectPoints(box_upper2, rvec, tvec, K, dist_coeff)
+            line_lower3, _ = cv.projectPoints(box_lower3, rvec, tvec, K, dist_coeff)
+            line_upper3, _ = cv.projectPoints(box_upper3, rvec, tvec, K, dist_coeff)
+            line_lower4, _ = cv.projectPoints(box_lower4, rvec, tvec, K, dist_coeff)
+            line_upper4, _ = cv.projectPoints(box_upper4, rvec, tvec, K, dist_coeff)
+            line_lower5, _ = cv.projectPoints(box_lower5, rvec, tvec, K, dist_coeff)
+            line_upper5, _ = cv.projectPoints(box_upper5, rvec, tvec, K, dist_coeff)
+            line_lower6, _ = cv.projectPoints(box_lower6, rvec, tvec, K, dist_coeff)
+            line_upper6, _ = cv.projectPoints(box_upper6, rvec, tvec, K, dist_coeff)
+            cv.polylines(img, [np.int32(line_lower1)], True, (255, 0, 0), 2)
+            cv.polylines(img, [np.int32(line_lower2)], True, (255, 0, 0), 2)
+            cv.polylines(img, [np.int32(line_lower3)], True, (255, 0, 0), 2)
+            cv.polylines(img, [np.int32(line_lower4)], True, (255, 0, 0), 2)
+            cv.polylines(img, [np.int32(line_lower5)], True, (255, 0, 0), 2)
+            cv.polylines(img, [np.int32(line_lower6)], True, (255, 0, 0), 2)
+            for b, t in zip(line_lower1, line_upper1):
                 cv.line(img, np.int32(b.flatten()), np.int32(t.flatten()), (0, 255, 0), 2)
+            for b, t in zip(line_lower2, line_upper2):
+                cv.line(img, np.int32(b.flatten()), np.int32(t.flatten()), (0, 255, 0), 2)
+            for b, t in zip(line_lower3, line_upper3):
+                cv.line(img, np.int32(b.flatten()), np.int32(t.flatten()), (0, 255, 0), 2)
+            for b, t in zip(line_lower4, line_upper4):
+                cv.line(img, np.int32(b.flatten()), np.int32(t.flatten()), (0, 255, 0), 2)
+            for b, t in zip(line_lower5, line_upper5):
+                cv.line(img, np.int32(b.flatten()), np.int32(t.flatten()), (0, 255, 0), 2)
+            for b, t in zip(line_lower6, line_upper6):
+                cv.line(img, np.int32(b.flatten()), np.int32(t.flatten()), (0, 255, 0), 2)
+            cv.polylines(img, [np.int32(line_upper1)], True, (0, 0, 255), 2)
+            cv.polylines(img, [np.int32(line_upper2)], True, (0, 0, 255), 2)
+            cv.polylines(img, [np.int32(line_upper3)], True, (0, 0, 255), 2)
+            cv.polylines(img, [np.int32(line_upper4)], True, (0, 0, 255), 2)
+            cv.polylines(img, [np.int32(line_upper5)], True, (0, 0, 255), 2)
+            cv.polylines(img, [np.int32(line_upper6)], True, (0, 0, 255), 2)
 
             # Print the camera position
             R, _ = cv.Rodrigues(rvec) # Alternative) scipy.spatial.transform.Rotation
@@ -118,11 +175,11 @@ def pose_estimation_chessboard(input_file, K, dist_coeff, board_pattern = (10, 7
 
 if __name__ == '__main__':
     input_file = './data/chessboard.mp4'
-    auto = False
+    auto_calibration = True
     board_pattern = (10, 7)
     board_cellsize = 0.024
 
-    img_select = select_img_from_video(input_file, board_pattern, auto)
+    img_select = select_img_from_video(input_file, board_pattern, auto_calibration)
     assert len(img_select) > 0, 'There is no selected images!'
     rms, K, dist_coeff, rvecs, tvecs = calib_camera_from_chessboard(img_select, board_pattern, board_cellsize)
 
